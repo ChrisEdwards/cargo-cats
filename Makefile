@@ -148,6 +148,24 @@ deploy: validate-env-vars deploy-contrast download-helm-dependencies run-helm se
 	echo "==================================================================\n"
 	echo ""
 
+deploy-no-contrast: validate-env-vars download-helm-dependencies run-helm setup-opensearch deploy-simulation-console
+	echo "\n\nDeployment complete (without Contrast)!"
+	echo "=================================================================="
+	echo "Note: It may take a few minutes for the deployment to be fully ready."
+	echo "==================================================================\n"
+	echo ""
+	echo "Simulation Console: http://console.localhost"
+	echo ""
+	echo "Vuln App: http://cargocats.localhost"
+	echo "  Username: admin"
+	echo "  Password: password123"
+	echo ""
+	echo "OpenSearch Dashboard: http://opensearch.localhost"
+	echo "  Username: admin"
+	echo "  Password: Contrast@123!"
+	echo "==================================================================\n"
+	echo ""
+
 uninstall: 
 	helm uninstall contrast-cargo-cats; helm uninstall simulation-console; kubectl delete namespace contrast-agent-operator;
 
