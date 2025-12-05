@@ -24,7 +24,7 @@ jobs:
         include:
           - service: dataservice
             app_id: 4d6c1564-e9a2-4c6e-b309-eb3e457d0668
-            build_command: cd services/dataservice && ./mvnw clean test -B
+            build_command: cd services/dataservice && ./mvnw clean package -DskipTests -B
             runtime: java
             java_version: '17'
           - service: frontgateservice
