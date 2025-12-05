@@ -24,27 +24,30 @@ jobs:
         include:
           - service: dataservice
             app_id: 4d6c1564-e9a2-4c6e-b309-eb3e457d0668
-            build_command: cd services/dataservice && mvn clean test -B
+            build_command: cd services/dataservice && ./mvnw clean test -B
             runtime: java
+            java_version: '17'
           - service: frontgateservice
             app_id: 947a1020-ae16-4b90-8269-2b2c937de509
-            build_command: cd services/frontgateservice && mvn clean test -B
+            build_command: cd services/frontgateservice && ./mvnw clean test -B
             runtime: java
+            java_version: '11'
           - service: labelservice
             app_id: 361ab43d-150c-4ebb-bcee-c863150473b3
             build_command: cd services/labelservice && npm install
             runtime: node
+            java_version: ''
 
     name: SmartFix - ${{ matrix.service }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK
         if: matrix.runtime == 'java'
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: ${{ matrix.java_version }}
           distribution: 'temurin'
 
       - name: Set up Node.js
