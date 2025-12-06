@@ -35,7 +35,6 @@ public class PaymentController {
         try {
             List<Map<String, Object>> result = null;
             
-            // entities are too hard. cant figure em out. im just gonna use raw sql
             if (creditCard != null && !creditCard.isEmpty() && shipmentId != null && !shipmentId.isEmpty()) {
                 // Create credit card table if it doesn't exist in the credit_cards database
                 String createTableSql = "CREATE TABLE IF NOT EXISTS credit_card (" +
@@ -44,33 +43,34 @@ public class PaymentController {
                     "shipment_id BIGINT NOT NULL)";
                 creditCardsJdbcTemplate.execute(createTableSql);
                 
-                // Insert credit card data into the credit_cards database
-                String insertSql = "INSERT INTO credit_card (card_number, shipment_id) VALUES ('" + creditCard + "', " + shipmentId + ")";
+                // Validate shipmentId is numeric to prevent SQL injection
+                Long validatedShipmentId = validateShipmentId(shipmentId);
+                
+                // Insert credit card data using parameterized query
+                String insertSql = "INSERT INTO credit_card (card_number, shipment_id) VALUES (?, ?)";
                 System.out.println("DEBUG: Executing SQL statement: " + insertSql + " on credit_cards database");
                 System.out.println("DEBUG: Credit Card parameter: " + creditCard);
-                System.out.println("DEBUG: Shipment ID parameter: " + shipmentId);
+                System.out.println("DEBUG: Shipment ID parameter: " + validatedShipmentId);
                 
-                // Execute the insert statement using the creditCardsJdbcTemplate (operates on credit_cards database)
                 System.out.println("DEBUG: Using creditCardsJdbcTemplate to execute query on credit_cards database");
-                creditCardsJdbcTemplate.execute(insertSql);
+                creditCardsJdbcTemplate.update(insertSql, creditCard, validatedShipmentId);
                 
-                // Update the main shipment table to reference the credit card (but not store the actual number)
-                String updateSql = "UPDATE shipment SET credit_card = 'XXXX-XXXX-XXXX-" + 
-                    (creditCard.length() > 4 ? creditCard.substring(creditCard.length() - 4) : creditCard) + 
-                    "' WHERE id = " + shipmentId + ";";
+                // Mask credit card for display
+                String maskedCard = maskCreditCard(creditCard);
+                
+                // Update the main shipment table using parameterized query
+                String updateSql = "UPDATE shipment SET credit_card = ? WHERE id = ?";
                 
                 System.out.println("DEBUG: Using main jdbcTemplate to execute query on main database");
                 
-                // Execute the update statement using the default jdbcTemplate
-                jdbcTemplate.execute(updateSql);
+                jdbcTemplate.update(updateSql, maskedCard, validatedShipmentId);
                 
                 // Create response with success message
                 result = List.of(Map.of(
                     "success", true,
                     "message", "Credit card stored in separate database for shipment",
-                    "shipment_id", shipmentId,
-                    "credit_card", "XXXX-XXXX-XXXX-" + 
-                        (creditCard.length() > 4 ? creditCard.substring(creditCard.length() - 4) : creditCard)
+                    "shipment_id", validatedShipmentId,
+                    "credit_card", maskedCard
                 ));
             } else {
                 result = List.of(Map.of(
@@ -91,5 +91,23 @@ public class PaymentController {
                 "shipment_id_param", shipmentId != null ? shipmentId : "none"
             ));
         }
+    }
+    
+    private Long validateShipmentId(String shipmentId) {
+        try {
+            return Long.parseLong(shipmentId);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid shipment ID format");
+        }
+    }
+    
+    private String maskCreditCard(String creditCard) {
+        if (creditCard == null || creditCard.isEmpty()) {
+            return "";
+        }
+        if (creditCard.length() <= 4) {
+            return creditCard;
+        }
+        return "XXXX-XXXX-XXXX-" + creditCard.substring(creditCard.length() - 4);
     }
 }
