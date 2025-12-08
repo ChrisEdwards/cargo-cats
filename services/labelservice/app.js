@@ -36,9 +36,13 @@ app.post('/generate-label', (req, res) => {
             });
         }
         
-        // Dangerous: Using eval() to process names for "capitalization"
-        const processedFirstName = eval(`"${firstName}".charAt(0).toUpperCase() + "${firstName}".slice(1).toLowerCase()`);
-        const processedLastName = eval(`"${lastName}".charAt(0).toUpperCase() + "${lastName}".slice(1).toLowerCase()`);
+        const capitalizeString = (str) => {
+            if (!str || typeof str !== 'string') return '';
+            return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+        };
+        
+        const processedFirstName = capitalizeString(firstName);
+        const processedLastName = capitalizeString(lastName);
 
         // Use provided tracking number or generate one
         const finalTrackingNumber = trackingNumber || `TRACK-${uuidv4().substring(0, 8).toUpperCase()}`;
