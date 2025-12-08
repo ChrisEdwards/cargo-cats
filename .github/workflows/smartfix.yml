@@ -1,56 +1,128 @@
 name: Contrast AI SmartFix
 
 on:
-  # Run daily at midnight UTC
-  schedule:
-    - cron: '0 0 * * *'
-  # Run when PRs are closed (to pick up new vulns after merges)
   pull_request:
-    types: [closed]
-  # Allow manual triggering
-  workflow_dispatch:
+    types:
+      - closed
+  schedule:
+    - cron: '0 0 * * *' # Runs daily at midnight UTC, adjust as needed
+  workflow_dispatch: # Allows manual triggering
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-  smartfix:
+  generate_fixes:
+    name: Generate Fixes
     runs-on: ubuntu-latest
-    name: SmartFix - frontgateservice
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    steps:
+      # For Claude via AWS Bedrock with IAM credentials (Option A - Recommended)
+      # This step can be omitted if using another LLM provider or using Bedrock API keys (Option B).
+      #- name: Configure AWS Credentials
+      #  uses: aws-actions/configure-aws-credentials@v4
+      #  with:
+      #    aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #    aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #    aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+      #    aws-region: ${{ vars.AWS_REGION }}
+
+      # Alternative: For Claude via AWS Bedrock with API keys (Option B - Simpler but less secure)
+      # If using this method, omit the "Configure AWS Credentials" step above and uncomment the lines below
+      # in the "Run Contrast AI SmartFix - Generate Fixes Action" step:
+      # aws_bearer_token_bedrock: ${{ secrets.AWS_BEARER_TOKEN_BEDROCK }}
+      # aws_region: ${{ vars.AWS_REGION }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Contrast AI SmartFix - Generate Fixes Action
+        uses: Contrast-Security-OSS/contrast-ai-smartfix-action@v1 # Replace with the latest version
+        with:
+          # Contrast Configuration
+          contrast_host: ${{ vars.CONTRAST_HOST }} # The host name of your Contrast SaaS instance, e.g. 'app.contrastsecurity.com'
+          contrast_org_id: ${{ vars.CONTRAST_ORG_ID }} # The UUID of your Contrast organization
+          contrast_app_id: ${{ vars.CONTRAST_APP_ID }} # The UUID that is specific to the application in this repository.
+          contrast_authorization_key: ${{ secrets.CONTRAST_AUTHORIZATION_KEY }}
+          contrast_api_key: ${{ secrets.CONTRAST_API_KEY }}
+
+          # GitHub Configuration
+          github_token: ${{ secrets.GITHUB_TOKEN }} # Necessary for creating PRs.  This is the token GitHub auto-creates for actions and is not a Personal Access Token (PAT).
+          base_branch: '${{ github.event.repository.default_branch }}' # This will default to your repo default branch (other common base branches are 'main', 'master' or 'develop')
+
+          # Required Runtime Configuration
+          build_command: 'cd services/frontgateservice && ./mvnw clean test -B' # Or the build command appropriate for your project.  SmartFix will use this command to ensure that its changes work correctly with your project.
+
+          use_contrast_llm: true
+          # LLM Configuration (Bring Your Own LLM)
+          # Choose ONE LLM provider and configure its credentials
+          # Recommended: Anthropic Claude Sonnet
+
+          # Claude Via Direct Anthropic API
+          # agent_model: 'anthropic/claude-sonnet-4-5-20250929' # Check LiteLLM docs for exact model string
+          # anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+          # Claude Via AWS Bedrock
+          # Setup AWS credentials in the earlier "Configure AWS Credentials" step.
+          # agent_model: 'bedrock/us.anthropic.claude-sonnet-4-5-20250929-v1:0' # Example for Claude Sonnet on Bedrock
+
+          # Experimental: Google Gemini Pro
+          # agent_model: 'gemini/gemini-2.5-pro-preview-05-06' # Check LiteLLM docs for exact model string
+          # gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+
+          # Other Optional Inputs (see action.yml for defaults and more options)
+          # formatting_command: 'mvn spotless:apply' # Or the command appropriate for your project to correct the formatting of SmartFix's changes.  This ensures that SmartFix follows your coding standards.
+          # max_open_prs: 5 # This is the maximum limit for the number of PRs that SmartFix will have open at single time
+
+  handle_pr_merge:
+    name: Handle PR Merge
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && contains(github.event.pull_request.head.ref, 'smartfix/remediation-')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
         with:
-          java-version: '11'
-          distribution: 'temurin'
+          fetch-depth: 0
 
-      - name: Run Contrast AI SmartFix
-        uses: Contrast-Security-OSS/contrast-ai-smartfix-action@v1
+      - name: Notify Contrast on PR Merge
+        uses: Contrast-Security-OSS/contrast-ai-smartfix-action@v1 # Replace with the latest version
         with:
+          run_task: merge
+          # --- GitHub Token ---
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # --- Contrast API Credentials ---
           contrast_host: ${{ vars.CONTRAST_HOST }}
           contrast_org_id: ${{ vars.CONTRAST_ORG_ID }}
-          contrast_app_id: 947a1020-ae16-4b90-8269-2b2c937de509
+          contrast_app_id: ${{ vars.CONTRAST_APP_ID }}
           contrast_authorization_key: ${{ secrets.CONTRAST_AUTHORIZATION_KEY }}
           contrast_api_key: ${{ secrets.CONTRAST_API_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          build_command: cd services/frontgateservice && ./mvnw clean test -B
-          # Use Contrast-hosted LLM (no external API keys needed)
-          use_contrast_llm: 'true'
-          # Optional: limit number of open PRs per service
-          max_open_prs: 3
-          # Enable verbose debug logging
-          debug_mode: 'true'
+        env:
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
 
-# DISABLED SERVICES (label permission bug investigation):
-# - dataservice:
-#     app_id: 4d6c1564-e9a2-4c6e-b309-eb3e457d0668
-#     build_command: cd services/dataservice && ./mvnw clean package -DskipTests -B
-#     java_version: '17'
-# - labelservice:
-#     app_id: 361ab43d-150c-4ebb-bcee-c863150473b3
-#     build_command: cd services/labelservice && npm install
-#     runtime: node
+  handle_pr_closed:
+    name: Handle PR Close
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == false && contains(github.event.pull_request.head.ref, 'smartfix/remediation-')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Notify Contrast on PR Closed
+        uses: Contrast-Security-OSS/contrast-ai-smartfix-action@v1 # Replace with the latest version
+        with:
+          run_task: closed
+          # --- GitHub Token ---
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # --- Contrast API Credentials ---
+          contrast_host: ${{ vars.CONTRAST_HOST }}
+          contrast_org_id: ${{ vars.CONTRAST_ORG_ID }}
+          contrast_app_id: ${{ vars.CONTRAST_APP_ID }}
+          contrast_authorization_key: ${{ secrets.CONTRAST_AUTHORIZATION_KEY }}
+          contrast_api_key: ${{ secrets.CONTRAST_API_KEY }}
+        env:
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
