@@ -6,6 +6,13 @@ const moment = require('moment');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+function capitalizeString(str) {
+    if (typeof str !== 'string' || str.length === 0) {
+        return str;
+    }
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -36,9 +43,8 @@ app.post('/generate-label', (req, res) => {
             });
         }
         
-        // Dangerous: Using eval() to process names for "capitalization"
-        const processedFirstName = eval(`"${firstName}".charAt(0).toUpperCase() + "${firstName}".slice(1).toLowerCase()`);
-        const processedLastName = eval(`"${lastName}".charAt(0).toUpperCase() + "${lastName}".slice(1).toLowerCase()`);
+        const processedFirstName = capitalizeString(firstName);
+        const processedLastName = capitalizeString(lastName);
 
         // Use provided tracking number or generate one
         const finalTrackingNumber = trackingNumber || `TRACK-${uuidv4().substring(0, 8).toUpperCase()}`;
