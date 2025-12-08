@@ -71,3 +71,5 @@ jobs:
           use_contrast_llm: 'true'
           # Optional: limit number of open PRs per service
           max_open_prs: 3
+          # Enable verbose debug logging
+          debug_mode: 'true'
