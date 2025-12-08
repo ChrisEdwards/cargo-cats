@@ -1,0 +1,13 @@
+/home/runner/work/cargo-cats/cargo-cats/services/frontgateservice/src/main/java/com/contrast/frontgateservice/FrontGateServiceApplication.java
+/home/runner/work/cargo-cats/cargo-cats/services/frontgateservice/src/main/java/com/contrast/frontgateservice/service/DocServiceProxy.java
+/home/runner/work/cargo-cats/cargo-cats/services/frontgateservice/src/main/java/com/contrast/frontgateservice/service/WebhookServiceProxy.java
+/home/runner/work/cargo-cats/cargo-cats/services/frontgateservice/src/main/java/com/contrast/frontgateservice/service/ImageServiceProxy.java
+/home/runner/work/cargo-cats/cargo-cats/services/frontgateservice/src/main/java/com/contrast/frontgateservice/service/UserService.java
+/home/runner/work/cargo-cats/cargo-cats/services/frontgateservice/src/main/java/com/contrast/frontgateservice/controller/ApiController.java
+/home/runner/work/cargo-cats/cargo-cats/services/frontgateservice/src/main/java/com/contrast/frontgateservice/controller/WebController.java
+/home/runner/work/cargo-cats/cargo-cats/services/frontgateservice/src/main/java/com/contrast/frontgateservice/service/DataServiceProxy.java
+/home/runner/work/cargo-cats/cargo-cats/services/frontgateservice/src/main/java/com/contrast/frontgateservice/entity/User.java
+/home/runner/work/cargo-cats/cargo-cats/services/frontgateservice/src/main/java/com/contrast/frontgateservice/config/AuthenticationConfig.java
+/home/runner/work/cargo-cats/cargo-cats/services/frontgateservice/src/main/java/com/contrast/frontgateservice/config/SecurityConfig.java
+/home/runner/work/cargo-cats/cargo-cats/services/frontgateservice/src/main/java/com/contrast/frontgateservice/service/CustomUserDetailsService.java
+/home/runner/work/cargo-cats/cargo-cats/services/frontgateservice/src/main/java/com/contrast/frontgateservice/service/LabelServiceProxy.java
