@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Addresses Management - Global Shipping</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        html {
+            font-family: 'Poppins', sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #38B885 0%, #005A70 50%, #1C2343 100%);
+            min-height: 100vh;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #FFFFFF !important;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: none;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #38B885 0%, #005A70 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            font-weight: 600;
+        }
+        .btn-outline-light:hover {
+            transform: translateY(-1px);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #38B885 0%, #005A70 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .btn-outline-danger {
+            border: 2px solid #dc3545;
+            color: #dc3545;
+            border-radius: 25px;
+            padding: 8px 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+        }
+        .btn-light {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #dee2e6;
+            color: #495057;
+            border-radius: 25px;
+            padding: 8px 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        .btn-light:hover {
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #005A70;
+            padding: 12px 20px;
+            transition: all 0.2s ease;
+        }
+        .form-control:focus {
+            border-color: #38B885;
+            outline: none;
+            box-shadow: none;
+        }
+        .address-card {
+            transition: transform 0.3s ease;
+        }
+        .address-card:hover {
+            transform: translateY(-5px);
+        }
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        .loading {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #1C2343;">
+        <div class="container">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-box-archive me-2" style="color: #DD6E1E;"></i>Global Shipping
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link me-3" href="/dashboard" style="color: #F3F3F3;">
+                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                </a>
+                <a class="nav-link me-3" href="/cats" style="color: #F3F3F3;">
+                    <i class="fas fa-box-archive me-1"></i>Packages
+                </a>
+                <a class="nav-link me-3" href="/addresses" style="color: #F3F3F3;">
+                    <i class="fas fa-home me-1"></i>Addresses
+                </a>
+                <a class="nav-link me-3" href="/shipments" style="color: #F3F3F3;">
+                    <i class="fas fa-shipping-fast me-1"></i>Shipments
+                </a>
+                <a class="nav-link me-3" href="/webhooks" style="color: #F3F3F3;">
+                    <i class="fas fa-link me-1"></i>Webhooks
+                </a>
+                <span class="navbar-text me-3" style="color: #F3F3F3;">
+                    Welcome, <strong th:text="${username}">User</strong>!
+                </span>
+                <form th:action="@{/logout}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-outline-light btn-sm" style="border-color: #DD6E1E; color: #DD6E1E;">
+                        <i class="fas fa-sign-out-alt me-1"></i>Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Add New Address</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="alertContainer"></div>
+                        
+                        <form id="addressForm">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="addressFname" class="form-label">First Name</label>
+                                        <input type="text" class="form-control" id="addressFname" name="fname" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="addressName" class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" id="addressName" name="name" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="addressStreet" class="form-label">Street Address</label>
+                                        <input type="text" class="form-control" id="addressStreet" name="address" required placeholder="123 Main St, City, State, ZIP">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add Address
+                                <span class="loading">
+                                    <i class="fas fa-spinner fa-spin ms-2"></i>
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-list me-2"></i>My Addresses</h5>
+                        <div class="float-end d-flex align-items-center gap-2">
+                            <button type="button" class="btn btn-light btn-sm" onclick="loadAddresses()">
+                                <i class="fas fa-refresh me-1"></i>Refresh
+                            </button>
+                            <button type="button" class="btn btn-light btn-sm" style="background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%); border: 2px solid #0d6efd; color: #0d6efd;" onclick="exportAddresses()">
+                                <i class="fas fa-file-export me-1"></i>Export
+                            </button>
+                            <label class="btn btn-light btn-sm mb-0" style="background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%); border: 2px solid #198754; color: #198754; cursor:pointer;">
+                                <i class="fas fa-file-import me-1"></i>Import
+                                <input type="file" id="importFileInput" accept=".ser" style="display:none" onchange="importAddresses(event)">
+                            </label>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="addressesContainer">
+                            <div class="text-center">
+                                <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                                <p class="text-muted mt-2">Loading addresses...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Configuration - now using local API proxy
+        const API_BASE_URL = '/api'; // Local API endpoints
+        
+        // Global variables
+        let currentUsername = document.querySelector('[th\\:text="${username}"]')?.textContent || 'User';
+
+        // Show alert function
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            alertContainer.innerHTML = alertHtml;
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                const alert = alertContainer.querySelector('.alert');
+                if (alert) {
+                    alert.classList.remove('show');
+                    setTimeout(() => alert.remove(), 150);
+                }
+            }, 5000);
+        }
+
+        // Add address form submission
+        document.getElementById('addressForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const loading = submitBtn.querySelector('.loading');
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            loading.style.display = 'inline';
+            
+            try {
+                const formData = new FormData(this);
+                const addressData = {
+                    fname: formData.get('fname'),
+                    name: formData.get('name'),
+                    address: formData.get('address')
+                };
+
+                const response = await fetch(`${API_BASE_URL}/addresses`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(addressData)
+                });
+
+                if (response.ok) {
+                    const createdAddress = await response.json();
+                    showAlert(`Address for "${addressData.fname} ${addressData.name}" added successfully!`, 'success');
+                    this.reset();
+                    loadAddresses(); // Refresh the addresses list
+                } else {
+                    const errorText = await response.text();
+                    showAlert(`Failed to add address: ${errorText}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Error adding address:', error);
+                showAlert(`Error adding address: ${error.message}`, 'danger');
+            } finally {
+                // Hide loading state
+                submitBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        });
+
+        // Load addresses function
+        async function loadAddresses() {
+            const addressesContainer = document.getElementById('addressesContainer');
+            
+            try {
+                addressesContainer.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                        <p class="text-muted mt-2">Loading addresses...</p>
+                    </div>
+                `;
+
+                const response = await fetch(`${API_BASE_URL}/addresses`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('API Response:', data); // Debug log
+                    
+                    // Handle Spring Data REST HAL format
+                    let addresses = [];
+                    if (data._embedded && data._embedded.address) {
+                        addresses = data._embedded.address;
+                    } else if (Array.isArray(data)) {
+                        addresses = data;
+                    }
+                    
+                    displayAddresses(addresses);
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error('Error loading addresses:', error);
+                addressesContainer.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                        <p class="text-muted mt-2">Failed to load addresses: ${error.message}</p>
+                        <button class="btn btn-primary btn-sm" onclick="loadAddresses()">
+                            <i class="fas fa-retry me-1"></i>Try Again
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Display addresses function
+        function displayAddresses(addresses) {
+            const addressesContainer = document.getElementById('addressesContainer');
+            
+            console.log('Displaying addresses:', addresses); // Debug log
+            
+            if (!addresses || !Array.isArray(addresses) || addresses.length === 0) {
+                addressesContainer.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No addresses found. Add your first address above!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const addressesHtml = addresses.map(address => {
+                // Handle different ID formats that Spring Data REST might return
+                const addressId = address.id || address._id || 'unknown';
+                const firstName = address.fname || '';
+                const lastName = address.name || '';
+                const fullName = (firstName + ' ' + lastName).trim() || 'Unknown Name';
+                const streetAddress = address.address || 'No address provided';
+                
+                return `
+                <div class="col-md-6 mb-3">
+                    <div class="card address-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-user me-2"></i>${fullName}
+                            </h5>
+                            <p class="card-text">
+                                <i class="fas fa-map-marker-alt me-2"></i>${streetAddress}<br>
+                                <small class="text-muted"><strong>ID:</strong> ${addressId}</small>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteAddress('${addressId}', '${fullName}')">
+                                <i class="fas fa-trash me-1"></i>Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            }).join('');
+
+            addressesContainer.innerHTML = `<div class="row">${addressesHtml}</div>`;
+        }
+
+        // Delete address function
+        async function deleteAddress(addressId, fullName) {
+            if (!confirm(`Are you sure you want to delete the address for "${fullName}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/addresses/${addressId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showAlert(`Address for "${fullName}" deleted successfully!`, 'success');
+                    loadAddresses(); // Refresh the addresses list
+                } else {
+                    const errorText = await response.text();
+                    showAlert(`Failed to delete address: ${errorText}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Error deleting address:', error);
+                showAlert(`Error deleting address: ${error.message}`, 'danger');
+            }
+        }
+
+        // Load addresses when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAddresses();
+        });
+        // Export addresses handler
+        function exportAddresses() {
+            window.location.href = `${API_BASE_URL}/addresses/export`;
+        }
+
+        // Import addresses handler
+        async function importAddresses(event) {
+            const fileInput = event.target;
+            if (!fileInput.files || fileInput.files.length === 0) return;
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            try {
+                const response = await fetch(`${API_BASE_URL}/addresses/import`, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    showAlert(result.message || 'Addresses imported successfully!', 'success');
+                    loadAddresses();
+                } else {
+                    const errorText = await response.text();
+                    showAlert(`Import failed: ${errorText}`, 'danger');
+                }
+            } catch (error) {
+                showAlert(`Import error: ${error.message}`, 'danger');
+            } finally {
+                fileInput.value = '';
+            }
+        }
+    </script>
+</body>
+</html>

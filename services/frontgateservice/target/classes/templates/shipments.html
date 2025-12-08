@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipment Management - Contrast Global Shipping</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        html {
+            font-family: 'Poppins', sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #38B885 0%, #005A70 50%, #1C2343 100%);
+            min-height: 100vh;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #FFFFFF !important;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: none;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #38B885 0%, #005A70 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #38B885 0%, #005A70 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-outline-light:hover {
+            transform: translateY(-1px);
+        }
+        .shipment-card {
+            transition: transform 0.3s ease;
+            margin-bottom: 1rem;
+        }
+        .shipment-card:hover {
+            transform: translateY(-2px);
+        }
+        .status-badge {
+            font-size: 0.8rem;
+        }
+        .action-buttons .btn {
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .shipment-details {
+            font-size: 0.9rem;
+        }
+        .shipment-details .text-muted {
+            font-size: 0.8rem;
+        }
+        .address-column {
+            padding: 0.5rem;
+            border-radius: 8px;
+            background-color: rgba(248, 249, 250, 0.7);
+            min-height: 80px;
+        }
+        .address-column:first-child {
+            margin-right: 0.25rem;
+        }
+        .address-column:last-child {
+            margin-left: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #1C2343;">
+        <div class="container">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-box-archive me-2" style="color: #DD6E1E;"></i>Global Shipping
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link me-3" href="/dashboard" style="color: #F3F3F3;">
+                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                </a>
+                <a class="nav-link me-3" href="/cats" style="color: #F3F3F3;">
+                    <i class="fas fa-box-archive me-1"></i>Packages
+                </a>
+                <a class="nav-link me-3" href="/addresses" style="color: #F3F3F3;">
+                    <i class="fas fa-home me-1"></i>Addresses
+                </a>
+                <a class="nav-link me-3" href="/shipments" style="color: #F3F3F3;">
+                    <i class="fas fa-shipping-fast me-1"></i>Shipments
+                </a>
+                <a class="nav-link me-3" href="/webhooks" style="color: #F3F3F3;">
+                    <i class="fas fa-link me-1"></i>Webhooks
+                </a>
+                <span class="navbar-text me-3" style="color: #F3F3F3;">
+                    Welcome, <strong th:text="${username}">User</strong>!
+                </span>
+                <form th:action="@{/logout}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-outline-light btn-sm" style="border-color: #DD6E1E; color: #DD6E1E;">
+                        <i class="fas fa-sign-out-alt me-1"></i>Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4 class="mb-0">
+                            <i class="fas fa-shipping-fast me-2"></i>Shipment Management
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createShipmentModal">
+                                    <i class="fas fa-plus me-2"></i>Create New Shipment
+                                </button>
+                                <button class="btn btn-success" onclick="loadShipments()">
+                                    <i class="fas fa-refresh me-2"></i>Refresh
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="searchShipments" placeholder="Search by tracking ID, cat name, or customer name...">
+                                    <button class="btn btn-outline-secondary" onclick="searchShipments()">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="shipmentsContainer">
+                            <div class="text-center">
+                                <i class="fas fa-spinner fa-spin me-2"></i>Loading shipments...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Shipment Modal -->
+    <div class="modal fade" id="createShipmentModal" tabindex="-1" aria-labelledby="createShipmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createShipmentModalLabel">
+                        <i class="fas fa-plus me-2"></i>Create New Shipment
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createShipmentForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="fromAddress" class="form-label">From Address</label>
+                                    <select class="form-select" id="fromAddress" required>
+                                        <option value="">Select From Address</option>
+                                    </select>
+                                    <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="showAddAddressModal('from')">
+                                        <i class="fas fa-plus me-1"></i>Add New Address
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="toAddress" class="form-label">To Address</label>
+                                    <select class="form-select" id="toAddress" required>
+                                        <option value="">Select To Address</option>
+                                    </select>
+                                    <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="showAddAddressModal('to')">
+                                        <i class="fas fa-plus me-1"></i>Add New Address
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="catSelect" class="form-label">Cat</label>
+                                    <select class="form-select" id="catSelect" required>
+                                        <option value="">Select Cat</option>
+                                    </select>
+                                    <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="showAddCatModal()">
+                                        <i class="fas fa-plus me-1"></i>Add New Cat
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="shipmentStatus" class="form-label">Status</label>
+                                    <select class="form-select" id="shipmentStatus" required>
+                                        <option value="open">Open</option>
+                                        <option value="processing">Processing</option>
+                                        <option value="shipped">Shipped</option>
+                                        <option value="in_transit">In Transit</option>
+                                        <option value="delivered">Delivered</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Create Shipment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Address Modal -->
+    <div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addAddressModalLabel">
+                        <i class="fas fa-map-marker-alt me-2"></i>Add New Address
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addAddressForm">
+                        <div class="mb-3">
+                            <label for="addressFirstName" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="addressFirstName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addressLastName" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="addressLastName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addressLine" class="form-label">Address</label>
+                            <textarea class="form-control" id="addressLine" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Address
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Cat Modal -->
+    <div class="modal fade" id="addCatModal" tabindex="-1" aria-labelledby="addCatModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCatModalLabel">
+                        <i class="fas fa-box-archive me-2"></i>Add New Cat
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addCatForm">
+                        <div class="mb-3">
+                            <label for="catName" class="form-label">Cat Name</label>
+                            <input type="text" class="form-control" id="catName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="catType" class="form-label">Cat Type</label>
+                            <select class="form-control" id="catType" required>
+                                <option value="">Select a type</option>
+                                <option value="Persian">Persian</option>
+                                <option value="Siamese">Siamese</option>
+                                <option value="Maine Coon">Maine Coon</option>
+                                <option value="British Shorthair">British Shorthair</option>
+                                <option value="Ragdoll">Ragdoll</option>
+                                <option value="Scottish Fold">Scottish Fold</option>
+                                <option value="Bengal">Bengal</option>
+                                <option value="Russian Blue">Russian Blue</option>
+                                <option value="Mixed">Mixed</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="catImage" class="form-label">Image URL (Optional)</label>
+                            <input type="url" class="form-control" id="catImage" placeholder="https://example.com/cat.jpg">
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Cat
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paymentModalLabel">
+                        <i class="fas fa-credit-card me-2"></i>Payment for Shipment
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Shipment ID:</strong> <span id="paymentShipmentId"></span>
+                    </div>
+                    
+                    <form id="paymentForm">
+                        <div class="mb-3">
+                            <label for="cardNumber" class="form-label">Credit Card Number</label>
+                            <input type="text" class="form-control" id="cardNumber" required 
+                                   placeholder="1234 5678 9012 3456" maxlength="19"
+                                   pattern="[0-9\s]{13,19}" title="Please enter a valid card number">
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <small>This is a demo application. Do not enter real credit card information.</small>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-credit-card me-2"></i>Process Payment
+                                <span class="spinner-border spinner-border-sm ms-2 d-none" id="paymentSpinner"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Preview Modal -->
+    <div class="modal fade" id="pdfPreviewModal" tabindex="-1" aria-labelledby="pdfPreviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pdfPreviewModalLabel">
+                        <i class="fas fa-file-pdf me-2"></i>Shipping Label Preview
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div id="pdfContainer" style="height: 600px; width: 100%;">
+                        <embed id="pdfEmbed" src="" type="application/pdf" width="100%" height="100%" style="border: none;">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="downloadCurrentLabel()">
+                        <i class="fas fa-download me-2"></i>Download PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let addresses = [];
+        let cats = [];
+        let shipments = [];
+        let currentAddressType = '';
+
+        // Helper function to get appropriate badge class for shipment status
+        function getStatusBadgeClass(status) {
+            switch(status.toLowerCase()) {
+                case 'delivered':
+                    return 'bg-success';
+                case 'in_transit':
+                case 'in transit':
+                case 'shipped':
+                    return 'bg-primary';
+                case 'processing':
+                case 'preparing':
+                    return 'bg-warning';
+                case 'cancelled':
+                case 'failed':
+                    return 'bg-danger';
+                case 'open':
+                case 'pending':
+                    return 'bg-secondary';
+                default:
+                    return 'bg-info';
+            }
+        }
+
+        // Load initial data
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAddresses();
+            loadCats();
+            loadShipments();
+            
+            // Add event listener for PDF modal cleanup
+            document.getElementById('pdfPreviewModal').addEventListener('hidden.bs.modal', function() {
+                // Clean up the blob URL when modal is closed
+                if (window.currentLabelBlob) {
+                    window.URL.revokeObjectURL(window.currentLabelBlob);
+                    window.currentLabelBlob = null;
+                    window.currentLabelTrackingId = null;
+                    document.getElementById('pdfEmbed').src = '';
+                }
+            });
+        });
+
+        // Load addresses
+        function loadAddresses() {
+            fetch('/api/addresses')
+                .then(response => response.json())
+                .then(data => {
+                    addresses = data._embedded?.address || [];
+                    populateAddressSelects();
+                })
+                .catch(error => {
+                    console.error('Error loading addresses:', error);
+                });
+        }
+
+        // Load cats
+        function loadCats() {
+            fetch('/api/cats')
+                .then(response => response.json())
+                .then(data => {
+                    cats = data._embedded?.cats || [];
+                    populateCatSelect();
+                })
+                .catch(error => {
+                    console.error('Error loading cats:', error);
+                });
+        }
+
+        // Load shipments with full details
+        async function loadShipments() {
+            const container = document.getElementById('shipmentsContainer');
+            container.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin me-2"></i>Loading shipments...</div>';
+            
+            try {
+                const response = await fetch('/api/shipments');
+                const data = await response.json();
+                
+                const baseShipments = data._embedded?.shipments || [];
+                
+                if (baseShipments.length === 0) {
+                    shipments = [];
+                    displayShipments(shipments);
+                    return;
+                }
+                
+                // Load full details for each shipment
+                const shipmentsWithDetails = await Promise.all(
+                    baseShipments.map(async (shipment) => {
+                        const enrichedShipment = { ...shipment };
+                        
+                        // Load cat details if cat link exists
+                        if (shipment._links?.cat?.href) {
+                            try {
+                                // Extract cat ID from the URL (e.g., "http://dataservice:8080/shipments/1/cat")
+                                const urlParts = shipment._links.cat.href.split('/');
+                                const shipmentId = urlParts[urlParts.indexOf('shipments') + 1];
+                                const catUrl = `/api/shipments/${shipmentId}/cat`;
+                                
+                                const catResponse = await fetch(catUrl);
+                                if (catResponse.ok) {
+                                    enrichedShipment.cat = await catResponse.json();
+                                }
+                            } catch (error) {
+                                // Silently handle cat loading errors
+                            }
+                        }
+                        
+                        // Load from address details if link exists
+                        if (shipment._links?.fromAddress?.href) {
+                            try {
+                                // Extract shipment ID from the URL
+                                const urlParts = shipment._links.fromAddress.href.split('/');
+                                const shipmentId = urlParts[urlParts.indexOf('shipments') + 1];
+                                const addressUrl = `/api/shipments/${shipmentId}/fromAddress`;
+                                
+                                const fromAddressResponse = await fetch(addressUrl);
+                                if (fromAddressResponse.ok) {
+                                    enrichedShipment.fromAddress = await fromAddressResponse.json();
+                                }
+                            } catch (error) {
+                                // Silently handle from address loading errors
+                            }
+                        }
+                        
+                        // Load to address details if link exists
+                        if (shipment._links?.toAddress?.href) {
+                            try {
+                                // Extract shipment ID from the URL
+                                const urlParts = shipment._links.toAddress.href.split('/');
+                                const shipmentId = urlParts[urlParts.indexOf('shipments') + 1];
+                                const addressUrl = `/api/shipments/${shipmentId}/toAddress`;
+                                
+                                const toAddressResponse = await fetch(addressUrl);
+                                if (toAddressResponse.ok) {
+                                    enrichedShipment.toAddress = await toAddressResponse.json();
+                                }
+                            } catch (error) {
+                                // Silently handle to address loading errors
+                            }
+                        }
+                        
+                        return enrichedShipment;
+                    })
+                );
+                
+                shipments = shipmentsWithDetails;
+                displayShipments(shipments);
+            } catch (error) {
+                container.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>Error loading shipments: ' + error.message + '</div>';
+            }
+        }
+
+        // Populate address selects
+        function populateAddressSelects() {
+            const fromSelect = document.getElementById('fromAddress');
+            const toSelect = document.getElementById('toAddress');
+            
+            [fromSelect, toSelect].forEach(select => {
+                // Clear existing options except the first one
+                while (select.children.length > 1) {
+                    select.removeChild(select.lastChild);
+                }
+                
+                addresses.forEach(address => {
+                    const option = document.createElement('option');
+                    option.value = `/address/${address.id}`;
+                    option.textContent = `${address.fname} ${address.name} - ${address.address}`;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        // Populate cat select
+        function populateCatSelect() {
+            const catSelect = document.getElementById('catSelect');
+            
+            // Clear existing options except the first one
+            while (catSelect.children.length > 1) {
+                catSelect.removeChild(catSelect.lastChild);
+            }
+            
+            cats.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = `/cats/${cat.id}`;
+                option.textContent = `${cat.name} (${cat.type})`;
+                catSelect.appendChild(option);
+            });
+        }
+
+        // Display shipments
+        function displayShipments(shipmentsToDisplay) {
+            const container = document.getElementById('shipmentsContainer');
+            
+            if (shipmentsToDisplay.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No shipments found. Create your first shipment to get started!
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '<div class="row">';
+            shipmentsToDisplay.forEach(shipment => {
+                const statusBadgeClass = getStatusBadgeClass(shipment.status);
+                const statusText = shipment.status.charAt(0).toUpperCase() + shipment.status.slice(1);
+                
+                // Format cat information
+                let catInfo = '';
+                if (shipment.cat && typeof shipment.cat === 'object' && shipment.cat.name) {
+                    catInfo = `
+                        <div class="mb-2">
+                            <strong><i class="fas fa-box-archive me-1 text-primary"></i>Cat:</strong><br>
+                            <span class="ms-3">${shipment.cat.name} (${shipment.cat.type || 'Unknown'})</span>
+                        </div>
+                    `;
+                } else if (shipment._links?.cat?.href) {
+                    catInfo = `
+                        <div class="mb-2">
+                            <strong><i class="fas fa-box-archive me-1 text-warning"></i>Cat:</strong><br>
+                            <span class="ms-3 text-muted">Cat assigned but details not loaded</span>
+                        </div>
+                    `;
+                } else {
+                    catInfo = `
+                        <div class="mb-2">
+                            <strong><i class="fas fa-box-archive me-1 text-muted"></i>Cat:</strong><br>
+                            <span class="ms-3 text-muted">No cat assigned</span>
+                        </div>
+                    `;
+                }
+                
+                // Format from address information
+                let fromAddressInfo = '';
+                if (shipment.fromAddress && typeof shipment.fromAddress === 'object' && shipment.fromAddress.fname) {
+                    fromAddressInfo = `
+                        <div>
+                            <strong><i class="fas fa-map-marker-alt me-1 text-success"></i>From:</strong><br>
+                            <span>${shipment.fromAddress.fname} ${shipment.fromAddress.name || shipment.fromAddress.lname || ''}</span><br>
+                            <small class="text-muted">${shipment.fromAddress.address || ''}</small>
+                        </div>
+                    `;
+                } else if (shipment._links?.fromAddress?.href) {
+                    fromAddressInfo = `
+                        <div>
+                            <strong><i class="fas fa-map-marker-alt me-1 text-warning"></i>From:</strong><br>
+                            <span class="text-muted">Address assigned but details not loaded</span>
+                        </div>
+                    `;
+                } else {
+                    fromAddressInfo = `
+                        <div>
+                            <strong><i class="fas fa-map-marker-alt me-1 text-muted"></i>From:</strong><br>
+                            <span class="text-muted">No from address</span>
+                        </div>
+                    `;
+                }
+                
+                // Format to address information
+                let toAddressInfo = '';
+                if (shipment.toAddress && typeof shipment.toAddress === 'object' && shipment.toAddress.fname) {
+                    toAddressInfo = `
+                        <div>
+                            <strong><i class="fas fa-flag-checkered me-1 text-danger"></i>To:</strong><br>
+                            <span>${shipment.toAddress.fname} ${shipment.toAddress.name || shipment.toAddress.lname || ''}</span><br>
+                            <small class="text-muted">${shipment.toAddress.address || ''}</small>
+                        </div>
+                    `;
+                } else if (shipment._links?.toAddress?.href) {
+                    toAddressInfo = `
+                        <div>
+                            <strong><i class="fas fa-flag-checkered me-1 text-warning"></i>To:</strong><br>
+                            <span class="text-muted">Address assigned but details not loaded</span>
+                        </div>
+                    `;
+                } else {
+                    toAddressInfo = `
+                        <div>
+                            <strong><i class="fas fa-flag-checkered me-1 text-muted"></i>To:</strong><br>
+                            <span class="text-muted">No to address</span>
+                        </div>
+                    `;
+                }
+                
+                html += `
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card shipment-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-box me-2"></i><strong>${shipment.trackingId}</strong>
+                                    </h6>
+                                    <span class="badge ${statusBadgeClass} status-badge">${statusText}</span>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="updateShipmentStatus(${shipment.id}, 'processing')">
+                                        <i class="fas fa-cog me-1"></i>Process
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="updateShipmentStatus(${shipment.id}, 'shipped')">
+                                        <i class="fas fa-truck me-1"></i>Ship
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info" onclick="updateShipmentStatus(${shipment.id}, 'delivered')">
+                                        <i class="fas fa-check me-1"></i>Deliver
+                                    </button>
+                                </div>
+                                
+                                <div class="shipment-details">
+                                    ${catInfo}
+                                    
+                                    <!-- Two-column layout for addresses -->
+                                    <div class="row mb-2">
+                                        <div class="col-6">
+                                            <div class="address-column">
+                                                ${fromAddressInfo}
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="address-column">
+                                                ${toAddressInfo}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="action-buttons mt-3 pt-2 border-top">
+                                    ${!shipment.creditCard ? `
+                                        <button class="btn btn-sm btn-warning" onclick="showPaymentModal(${shipment.id}, '${shipment.trackingId}')">
+                                            <i class="fas fa-credit-card me-1"></i>Pay Now
+                                        </button>
+                                    ` : `
+                                        <span class="badge bg-success me-2">
+                                            <i class="fas fa-check me-1"></i>Paid
+                                        </span>
+                                    `}
+                                    ${shipment.toAddress && shipment.creditCard ? `
+                                        <button class="btn btn-sm btn-info" onclick="generateLabel('${shipment.trackingId}', '${shipment.toAddress.fname || ''}', '${shipment.toAddress.name || shipment.toAddress.lname || ''}', '${shipment.toAddress.address || ''}')">
+                                            <i class="fas fa-tag me-1"></i>Generate Label
+                                        </button>
+                                    ` : shipment.toAddress && !shipment.creditCard ? `
+                                        <button class="btn btn-sm btn-secondary" disabled title="Payment required before label generation">
+                                            <i class="fas fa-tag me-1"></i>Generate Label
+                                        </button>
+                                    ` : `
+                                        <button class="btn btn-sm btn-secondary" disabled title="No recipient address available">
+                                            <i class="fas fa-tag me-1"></i>Generate Label
+                                        </button>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Search shipments
+        function searchShipments() {
+            const searchTerm = document.getElementById('searchShipments').value.toLowerCase();
+            const filtered = shipments.filter(shipment => {
+                // Search by tracking ID
+                if (shipment.trackingId.toLowerCase().includes(searchTerm)) {
+                    return true;
+                }
+                
+                // Search by cat name
+                if (shipment.cat && shipment.cat.name && 
+                    shipment.cat.name.toLowerCase().includes(searchTerm)) {
+                    return true;
+                }
+                
+                // Search by from address name
+                if (shipment.fromAddress && 
+                    ((shipment.fromAddress.fname && shipment.fromAddress.fname.toLowerCase().includes(searchTerm)) ||
+                     (shipment.fromAddress.name && shipment.fromAddress.name.toLowerCase().includes(searchTerm)))) {
+                    return true;
+                }
+                
+                // Search by to address name
+                if (shipment.toAddress && 
+                    ((shipment.toAddress.fname && shipment.toAddress.fname.toLowerCase().includes(searchTerm)) ||
+                     (shipment.toAddress.name && shipment.toAddress.name.toLowerCase().includes(searchTerm)))) {
+                    return true;
+                }
+                
+                return false;
+            });
+            displayShipments(filtered);
+        }
+
+        // Show add address modal
+        function showAddAddressModal(type) {
+            currentAddressType = type;
+            const modal = new bootstrap.Modal(document.getElementById('addAddressModal'));
+            modal.show();
+        }
+
+        // Show add cat modal
+        function showAddCatModal() {
+            const modal = new bootstrap.Modal(document.getElementById('addCatModal'));
+            modal.show();
+        }
+
+        // Show payment modal
+        function showPaymentModal(shipmentId, trackingId) {
+            document.getElementById('paymentShipmentId').textContent = trackingId;
+            document.getElementById('paymentForm').dataset.shipmentId = shipmentId;
+            const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+            modal.show();
+        }
+
+        // Format card number with spaces
+        document.getElementById('cardNumber').addEventListener('input', function(e) {
+            let x = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+            let formattedInputValue = x.match(/.{1,4}/g)?.join(' ') || x;
+            e.target.value = formattedInputValue;
+        });
+
+        // Update shipment status
+        function updateShipmentStatus(shipmentId, newStatus) {
+            fetch(`/api/shipments/${shipmentId}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(response => {
+                if (response.ok) {
+                    loadShipments(); // Reload shipments
+                } else {
+                    alert('Failed to update shipment status');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating shipment status:', error);
+                alert('Error updating shipment status');
+            });
+        }
+
+        // Generate shipping label
+        function generateLabel(trackingId, firstName, lastName, address) {
+            // Validate that we have required information
+            if (!firstName && !lastName) {
+                alert('Cannot generate label: Recipient name is missing');
+                return;
+            }
+            
+            if (!address) {
+                if (!confirm('Address information is missing. Continue with label generation anyway?')) {
+                    return;
+                }
+            }
+
+            // Prepare label data in the format expected by the API
+            const labelData = {
+                firstName: firstName || '',
+                lastName: lastName || '',
+                address: address || 'Address not available',
+                trackingId: trackingId // Include tracking ID for reference
+            };
+
+            // Show loading state
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Generating...';
+
+            // Send label data to label service
+            fetch('/api/labels/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(labelData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob(); // Expect a PDF blob
+                } else {
+                    throw new Error(`Label generation failed (${response.status})`);
+                }
+            })
+            .then(blob => {
+                // Create a URL for the PDF blob and show it in modal
+                const url = window.URL.createObjectURL(blob);
+                
+                // Store the blob URL globally for download functionality
+                window.currentLabelBlob = url;
+                window.currentLabelTrackingId = trackingId;
+                
+                // Set the PDF source and show modal
+                document.getElementById('pdfEmbed').src = url;
+                document.getElementById('pdfPreviewModalLabel').innerHTML = 
+                    `<i class="fas fa-file-pdf me-2"></i>Shipping Label Preview - ${trackingId}`;
+                
+                // Show the modal
+                const modal = new bootstrap.Modal(document.getElementById('pdfPreviewModal'));
+                modal.show();
+                
+                // Show success message with more details
+                const recipientName = `${firstName} ${lastName}`.trim() || 'Unknown Recipient';
+                console.log(`✅ Shipping label generated for ${trackingId} - Recipient: ${recipientName}`);
+            })
+            .catch(error => {
+                console.error('Label generation error:', error);
+                alert(`❌ Failed to generate label for ${trackingId}\n\nError: ${error.message}\n\nPlease try again or contact support.`);
+            })
+            .finally(() => {
+                // Restore button state
+                button.disabled = false;
+                button.innerHTML = originalText;
+            });
+        }
+
+        // Download the currently previewed label
+        function downloadCurrentLabel() {
+            if (window.currentLabelBlob && window.currentLabelTrackingId) {
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = window.currentLabelBlob;
+                a.download = `shipping-label-${window.currentLabelTrackingId}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                // Show download success message
+                alert(`📥 Shipping label for ${window.currentLabelTrackingId} downloaded successfully!`);
+            } else {
+                alert('No label available for download');
+            }
+        }
+
+        // Form handlers
+        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const spinner = document.getElementById('paymentSpinner');
+            const shipmentId = this.dataset.shipmentId;
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            spinner.classList.remove('d-none');
+            
+            const paymentData = {
+                shipmentId: shipmentId,
+                cardNumber: document.getElementById('cardNumber').value.replace(/\s/g, '')
+            };
+            
+            // Post to payment service
+            fetch('/api/payments/process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(paymentData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Payment processing failed');
+                }
+            })
+            .then(result => {
+                // Success - close modal and refresh shipments
+                bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+                this.reset();
+                loadShipments();
+                alert('Payment processed successfully!');
+            })
+            .catch(error => {
+                console.error('Payment error:', error);
+                alert('Payment failed: ' + error.message);
+            })
+            .finally(() => {
+                // Hide loading state
+                submitBtn.disabled = false;
+                spinner.classList.add('d-none');
+            });
+        });
+
+        document.getElementById('createShipmentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                fromAddress: document.getElementById('fromAddress').value,
+                toAddress: document.getElementById('toAddress').value,
+                cat: document.getElementById('catSelect').value,
+                status: document.getElementById('shipmentStatus').value
+            };
+            
+            fetch('/api/shipments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('createShipmentModal')).hide();
+                    loadShipments();
+                    this.reset();
+                } else {
+                    alert('Failed to create shipment');
+                }
+            })
+            .catch(error => {
+                console.error('Error creating shipment:', error);
+                alert('Error creating shipment');
+            });
+        });
+
+        document.getElementById('addAddressForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                fname: document.getElementById('addressFirstName').value,
+                name: document.getElementById('addressLastName').value,
+                address: document.getElementById('addressLine').value
+            };
+            
+            fetch('/api/addresses', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addAddressModal')).hide();
+                    loadAddresses(); // Reload addresses
+                    this.reset();
+                } else {
+                    alert('Failed to create address');
+                }
+            })
+            .catch(error => {
+                console.error('Error creating address:', error);
+                alert('Error creating address');
+            });
+        });
+
+        document.getElementById('addCatForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('catName').value,
+                type: document.getElementById('catType').value,
+                image: document.getElementById('catImage').value || null
+            };
+            
+            fetch('/api/cats', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addCatModal')).hide();
+                    loadCats(); // Reload cats
+                    this.reset();
+                } else {
+                    alert('Failed to create cat');
+                }
+            })
+            .catch(error => {
+                console.error('Error creating cat:', error);
+                alert('Error creating cat');
+            });
+        });
+
+        // Search on enter key
+        document.getElementById('searchShipments').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchShipments();
+            }
+        });
+    </script>
+</body>
+</html>
