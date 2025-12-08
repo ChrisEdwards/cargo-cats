@@ -1,0 +1,15 @@
+com/contrast/frontgateservice/service/DataServiceProxy.class
+com/contrast/frontgateservice/service/UserService.class
+com/contrast/frontgateservice/service/ImageServiceProxy$1.class
+com/contrast/frontgateservice/service/CustomUserDetailsService.class
+com/contrast/frontgateservice/service/ImageServiceProxy.class
+com/contrast/frontgateservice/entity/User.class
+com/contrast/frontgateservice/config/AuthenticationConfig.class
+com/contrast/frontgateservice/controller/WebController.class
+com/contrast/frontgateservice/service/LabelServiceProxy.class
+com/contrast/frontgateservice/service/WebhookServiceProxy.class
+com/contrast/frontgateservice/service/DocServiceProxy.class
+com/contrast/frontgateservice/FrontGateServiceApplication.class
+com/contrast/frontgateservice/config/SecurityConfig.class
+com/contrast/frontgateservice/service/DocServiceProxy$1.class
+com/contrast/frontgateservice/controller/ApiController.class
