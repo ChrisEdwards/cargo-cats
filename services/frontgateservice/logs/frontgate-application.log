@@ -1,0 +1,18 @@
+2025-12-08 17:42:50.318 [main] INFO  com.contrast.frontgateservice.FrontGateServiceApplicationTests - Starting FrontGateServiceApplicationTests using Java 17.0.17 on runnervmoqczp with PID 2902 (started by runner in /home/runner/work/cargo-cats/cargo-cats/services/frontgateservice)
+2025-12-08 17:42:50.321 [main] DEBUG com.contrast.frontgateservice.FrontGateServiceApplicationTests - Running with Spring Boot v2.6.15, Spring v5.3.27
+2025-12-08 17:42:50.322 [main] INFO  com.contrast.frontgateservice.FrontGateServiceApplicationTests - No active profile set, falling back to 1 default profile: "default"
+2025-12-08 17:42:51.997 [main] INFO  com.contrast.frontgateservice.FrontGateServiceApplicationTests - Started FrontGateServiceApplicationTests in 1.92 seconds (JVM running for 3.533)
+2025-12-08 17:45:06.150 [main] INFO  com.contrast.frontgateservice.FrontGateServiceApplicationTests - Starting FrontGateServiceApplicationTests using Java 17.0.17 on runnervmoqczp with PID 3046 (started by runner in /home/runner/work/cargo-cats/cargo-cats/services/frontgateservice)
+2025-12-08 17:45:06.155 [main] DEBUG com.contrast.frontgateservice.FrontGateServiceApplicationTests - Running with Spring Boot v2.6.15, Spring v5.3.27
+2025-12-08 17:45:06.157 [main] INFO  com.contrast.frontgateservice.FrontGateServiceApplicationTests - No active profile set, falling back to 1 default profile: "default"
+2025-12-08 17:45:07.613 [main] INFO  com.contrast.frontgateservice.FrontGateServiceApplicationTests - Started FrontGateServiceApplicationTests in 1.687 seconds (JVM running for 2.638)
+2025-12-08 17:45:08.030 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Login attempt for user: testuser
+2025-12-08 17:45:08.032 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Successful authentication for user: testuser
+2025-12-08 17:45:08.039 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Login attempt for user: nonexistent
+2025-12-08 17:45:08.039 [main] ERROR com.contrast.frontgateservice.service.CustomUserDetailsService - Failed login attempt for non-existent user
+2025-12-08 17:45:08.041 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Login attempt for user: testuser
+2025-12-08 17:45:08.042 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Successful authentication for user: testuser
+2025-12-08 17:45:08.045 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Login attempt for user: 
+2025-12-08 17:45:08.046 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Successful authentication for user: 
+2025-12-08 17:45:08.048 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Login attempt for user: 
+2025-12-08 17:45:08.048 [main] ERROR com.contrast.frontgateservice.service.CustomUserDetailsService - Failed login attempt for non-existent user

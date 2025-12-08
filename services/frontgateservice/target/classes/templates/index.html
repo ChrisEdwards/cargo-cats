@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Shipping - Premium Shipping Service</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        html {
+            font-family: 'Poppins', sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #38B885 0%, #005A70 50%, #1C2343 100%);
+            min-height: 100vh;
+        }
+        
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-content {
+            z-index: 2;
+            position: relative;
+        }
+        
+        .floating-cats {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .floating-cat {
+            position: absolute;
+            opacity: 0.1;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .floating-cat:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; font-size: 2rem; }
+        .floating-cat:nth-child(2) { top: 20%; right: 20%; animation-delay: 1s; font-size: 1.5rem; }
+        .floating-cat:nth-child(3) { bottom: 30%; left: 15%; animation-delay: 2s; font-size: 2.5rem; }
+        .floating-cat:nth-child(4) { bottom: 20%; right: 10%; animation-delay: 3s; font-size: 1.8rem; }
+        .floating-cat:nth-child(5) { top: 50%; left: 5%; animation-delay: 4s; font-size: 1.2rem; }
+        .floating-cat:nth-child(6) { top: 60%; right: 5%; animation-delay: 5s; font-size: 2rem; }
+        .floating-cat:nth-child(7) { top: 35%; left: 25%; animation-delay: 1.5s; font-size: 1.7rem; }
+        .floating-cat:nth-child(8) { bottom: 10%; left: 40%; animation-delay: 2.5s; font-size: 1.4rem; }
+        .floating-cat:nth-child(9) { top: 75%; right: 25%; animation-delay: 3.5s; font-size: 2.2rem; }
+        .floating-cat:nth-child(10) { top: 15%; left: 60%; animation-delay: 0.5s; font-size: 1.6rem; }
+        .floating-cat:nth-child(11) { bottom: 45%; right: 35%; animation-delay: 4.5s; font-size: 1.3rem; }
+        .floating-cat:nth-child(12) { top: 85%; left: 20%; animation-delay: 1.8s; font-size: 1.9rem; }
+        .floating-cat:nth-child(13) { bottom: 60%; left: 50%; animation-delay: 3.2s; font-size: 1.1rem; }
+        .floating-cat:nth-child(14) { top: 40%; right: 15%; animation-delay: 2.8s; font-size: 2.3rem; }
+        .floating-cat:nth-child(15) { bottom: 5%; right: 45%; animation-delay: 4.2s; font-size: 1.5rem; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        .brand-logo {
+            font-size: 4rem;
+            background: linear-gradient(45deg, #DD6E1E, #FFA500, #DD6E1E);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease infinite;
+            text-shadow: 0 0 30px rgba(221, 110, 30, 0.3);
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .main-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: white;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            margin-bottom: 1rem;
+        }
+        
+        .tagline {
+            font-size: 1.4rem;
+            color: rgba(255,255,255,0.9);
+            font-weight: 300;
+            font-style: italic;
+            margin-bottom: 2rem;
+            text-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #38B885 0%, #005A70 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .btn-outline-primary {
+            border: 2px solid #005A70;
+            color: #005A70;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-primary:hover {
+            background-color: #005A70;
+            border-color: #005A70;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 90, 112, 0.3);
+        }
+        .btn-hero {
+            background: linear-gradient(135deg, #DD6E1E 0%, #FFA500 100%);
+            border: none;
+            border-radius: 50px;
+            padding: 15px 40px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(221, 110, 30, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-hero:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(221, 110, 30, 0.4);
+            color: white;
+        }
+        
+        .btn-outline-hero {
+            border: 3px solid rgba(255,255,255,0.8);
+            color: white;
+            border-radius: 50px;
+            padding: 12px 35px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-hero:hover {
+            background: white;
+            color: #005A70;
+            border-color: white;
+            transform: translateY(-2px);
+        }
+        
+        .tracking-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .tracking-input {
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+        }
+        
+        .tracking-input:focus {
+            border-color: #005A70;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-track {
+            background: linear-gradient(135deg, #38B885 0%, #005A70 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 15px 30px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .btn-track:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+        
+        .features-section {
+            padding: 4rem 0;
+        }
+        
+        .section-title {
+            color: white;
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .stats-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #ff6b6b;
+        }
+        
+        .stats-label {
+            font-size: 1.1rem;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            color: white !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating background cats -->
+    <div class="floating-cats">
+        <i class="fas fa-box-archive floating-cat"></i>
+        <i class="fas fa-box-archive floating-cat"></i>
+        <i class="fas fa-box-archive floating-cat"></i>
+        <i class="fas fa-box-archive floating-cat"></i>
+        <i class="fas fa-box-archive floating-cat"></i>
+        <i class="fas fa-box-archive floating-cat"></i>
+        <i class="fas fa-box-archive floating-cat"></i>
+        <i class="fas fa-box-archive floating-cat"></i>
+        <i class="fas fa-box-archive floating-cat"></i>
+        <i class="fas fa-box-archive floating-cat"></i>
+        <i class="fas fa-box-archive floating-cat"></i>
+        <i class="fas fa-box-archive floating-cat"></i>
+        <i class="fas fa-box-archive floating-cat"></i>
+        <i class="fas fa-box-archive floating-cat"></i>
+        <i class="fas fa-box-archive floating-cat"></i>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-box-archive me-2"></i>Global Shipping
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="#tracking">Track Shipment</a>
+                <a class="nav-link" href="#features">Services</a>
+                <a class="nav-link" href="/login">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 hero-content">
+                    <div class="text-center text-lg-start">
+                        <i class="fas fa-box-archive brand-logo d-block mb-4"></i>
+                        <h1 class="main-title">Global Shipping</h1>
+                        <p class="tagline">
+                            "Real-time logistics, with built-in security."
+                        </p>
+                        <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
+                            <a href="/login" class="btn btn-hero">
+                                <i class="fas fa-sign-in-alt me-2"></i>Get Started
+                            </a>
+                            <a href="#features" class="btn btn-outline-hero">
+                                <i class="fas fa-info-circle me-2"></i>Learn More
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="tracking-section" id="tracking">
+                        <h3 class="text-center mb-4">
+                            <i class="fas fa-search me-2 text-primary"></i>Track Your Shipment
+                        </h3>
+                        <form id="trackingForm">
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control tracking-input" 
+                                       placeholder="Enter tracking ID..." 
+                                       id="trackingId" required>
+                                <button class="btn btn-track" type="submit">
+                                    <i class="fas fa-search me-2"></i>Track
+                                </button>
+                            </div>
+                        </form>
+                        <div id="trackingResult" class="mt-3"></div>
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Tracking IDs start with "TRACK-" followed by 8 characters
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section" id="features">
+        <div class="container">
+            <h2 class="section-title">Why Choose Global Shipping?</h2>
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-shipping-fast feature-icon"></i>
+                            <h4 class="card-title">Express Delivery</h4>
+                            <p class="card-text">Lightning-fast cat delivery service with real-time tracking and updates every step of the way.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-heart feature-icon"></i>
+                            <h4 class="card-title">Loving Care</h4>
+                            <p class="card-text">Every cat is treated with premium care, comfort, and attention during their journey to their new home.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-shield-alt feature-icon"></i>
+                            <h4 class="card-title">Secure & Safe</h4>
+                            <p class="card-text">Industry-leading security protocols and veterinary-approved transport methods ensure safe delivery.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats -->
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <div class="card feature-card">
+                        <div class="card-body p-4">
+                            <div class="stats-number">2,847</div>
+                            <div class="stats-label">Happy Cats Delivered</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card feature-card">
+                        <div class="card-body p-4">
+                            <div class="stats-number">98.9%</div>
+                            <div class="stats-label">Customer Satisfaction</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card feature-card">
+                        <div class="card-body p-4">
+                            <div class="stats-number">24/7</div>
+                            <div class="stats-label">Support Available</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card feature-card">
+                        <div class="card-body p-4">
+                            <div class="stats-number">127</div>
+                            <div class="stats-label">Cities Served</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Tracking form handler
+        document.getElementById('trackingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const trackingId = document.getElementById('trackingId').value.trim();
+            const resultDiv = document.getElementById('trackingResult');
+            
+            if (!trackingId) {
+                resultDiv.innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Please enter a tracking ID</div>';
+                return;
+            }
+            
+            // Show loading
+            resultDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin me-2"></i>Searching...</div>';
+            
+            // Make actual API call to track shipment
+            fetch(`/api/shipments/track?trackingId=${encodeURIComponent(trackingId)}`)
+                .then(response => {
+                    if (response.ok) {
+                        return response.text();
+                    } else {
+                        // For non-200 responses, still get the HTML error message
+                        return response.text();
+                    }
+                })
+                .then(html => {
+                    // Server now returns HTML directly, just insert it
+                    resultDiv.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Tracking error:', error);
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Unable to track shipment "${trackingId}" at this time. Please try again later.
+                        </div>
+                    `;
+                });
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
