@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Packages Management - Global Shipping</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        html {
+            font-family: 'Poppins', sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #38B885 0%, #005A70 50%, #1C2343 100%);
+            min-height: 100vh;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #FFFFFF !important;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: none;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #38B885 0%, #005A70 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            font-weight: 600;
+        }
+        .btn-outline-light:hover {
+            transform: translateY(-1px);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #38B885 0%, #005A70 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .btn-outline-primary {
+            border: 2px solid #005A70;
+            color: #005A70;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-primary:hover {
+            background-color: #005A70;
+            border-color: #005A70;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 90, 112, 0.3);
+        }
+        .btn-outline-danger {
+            border: 2px solid #dc3545;
+            color: #dc3545;
+            border-radius: 25px;
+            padding: 8px 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+        }
+        .btn-light {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #dee2e6;
+            color: #495057;
+            border-radius: 25px;
+            padding: 8px 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        .btn-light:hover {
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }    
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #005A70;
+            padding: 12px 20px;
+            transition: all 0.2s ease;
+        }
+        .form-control:focus {
+            border-color: #38B885;
+            outline: none;
+            box-shadow: none;
+        }
+        .cat-card {
+            transition: transform 0.3s ease;
+        }
+        .cat-card:hover {
+            transform: translateY(-5px);
+        }
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        .loading {
+            display: none;
+        }
+        .modal-content {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border: none;
+            overflow: hidden;
+        }
+        .modal-header {
+            border-bottom: none;
+        }
+        .modal-footer {
+            border-top: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #1C2343;">
+        <div class="container">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-box-archive me-2" style="color: #DD6E1E;"></i>Global Shipping
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link me-3" href="/dashboard" style="color: #F3F3F3;">
+                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                </a>
+                <a class="nav-link me-3" href="/cats" style="color: #F3F3F3;">
+                    <i class="fas fa-box-archive me-1"></i>Packages
+                </a>
+                <a class="nav-link me-3" href="/addresses" style="color: #F3F3F3;">
+                    <i class="fas fa-home me-1"></i>Addresses
+                </a>
+                <a class="nav-link me-3" href="/shipments" style="color: #F3F3F3;">
+                    <i class="fas fa-shipping-fast me-1"></i>Shipments
+                </a>
+                <a class="nav-link me-3" href="/webhooks" style="color: #F3F3F3;">
+                    <i class="fas fa-link me-1"></i>Webhooks
+                </a>
+                <span class="navbar-text me-3" style="color: #F3F3F3;">
+                    Welcome, <strong th:text="${username}">User</strong>!
+                </span>
+                <form th:action="@{/logout}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-outline-light btn-sm" style="border-color: #DD6E1E; color: #DD6E1E;">
+                        <i class="fas fa-sign-out-alt me-1"></i>Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Add New Package</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="alertContainer"></div>
+                        
+                        <form id="catForm">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="catName" class="form-label">Name</label>
+                                        <input type="text" class="form-control" id="catName" name="name" placeholder="Enter your cat's name" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="catType" class="form-label">Cat Type</label>
+                                        <select class="form-control" id="catType" name="type" required>
+                                            <option value="">Select a type</option>
+                                            <option value="Persian">Persian</option>
+                                            <option value="Siamese">Siamese</option>
+                                            <option value="Maine Coon">Maine Coon</option>
+                                            <option value="British Shorthair">British Shorthair</option>
+                                            <option value="Ragdoll">Ragdoll</option>
+                                            <option value="Scottish Fold">Scottish Fold</option>
+                                            <option value="Bengal">Bengal</option>
+                                            <option value="Russian Blue">Russian Blue</option>
+                                            <option value="Mixed">Mixed</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="catImage" class="form-label">Cat Photo</label>
+                                        <input type="file" class="form-control" id="catImage" name="imageFile" 
+                                               accept="image/*" onchange="previewImage(this)">
+                                        <small class="form-text text-muted">Upload a photo of your cat (JPG, PNG, GIF)</small>
+                                        <div id="imagePreview" class="mt-2" style="display: none;">
+                                            <img id="previewImg" src="" alt="Preview" style="max-width: 100%; max-height: 150px; border-radius: 8px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add Cat
+                                <span class="loading">
+                                    <i class="fas fa-spinner fa-spin ms-2"></i>
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medical Record Upload Modal -->
+        <div class="modal fade" id="medicalRecordsModal" tabindex="-1" aria-labelledby="medicalRecordsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #38B885 0%, #005A70 100%); color: white;">
+                        <h5 class="modal-title" id="medicalRecordsModalLabel">
+                            <i class="fas fa-file-medical me-2"></i>Upload Medical History
+                        </h5>
+                        <small class="text-light ms-3">Upload medical documents for: <span id="selectedCatName"></span></small>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="documentAlertContainer"></div>
+                        
+                        <form id="documentForm">
+                            <input type="hidden" id="selectedCatId" name="catId">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        <label for="medicalDocument" class="form-label">Medical History Document</label>
+                                        <input type="file" class="form-control" id="medicalDocument" name="file" 
+                                               accept=".docx" required>
+                                        <small class="form-text text-muted">Upload a DOCX file containing medical records, vaccination history, or vet notes</small>
+                                    </div>
+                                </div>
+                            </div>
+                        
+                            <!-- Document Processing Results -->
+                            <div id="documentResults" style="display: none;">
+                                <hr>
+                                <h6><i class="fas fa-file-medical-alt me-2"></i>Document Analysis Results</h6>
+                                <div id="documentContent" class="bg-light p-3 rounded"></div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </button>
+                        <button type="submit" form="documentForm" class="btn btn-primary">
+                            <i class="fas fa-upload me-2"></i>Process Document
+                            <span class="loading">
+                                <i class="fas fa-spinner fa-spin ms-2"></i>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-list me-2"></i>My Cats</h5>
+                        <button type="button" class="btn btn-light btn-sm float-end" onclick="loadCats()">
+                            <i class="fas fa-refresh me-1"></i>Refresh
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="catsContainer">
+                            <div class="text-center">
+                                <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                                <p class="text-muted mt-2">Loading cats...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Configuration - now using local API proxy
+        const API_BASE_URL = '/api'; // Local API endpoints
+        
+        // Global variables
+        let currentUsername = document.querySelector('[th\\:text="${username}"]')?.textContent || 'User';
+
+        // Image preview function
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        // Upload image to image service
+        async function uploadImage(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const response = await fetch(`${API_BASE_URL}/photos/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to upload image: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            return result.path; // Return the path from the image service
+        }
+
+        // Show alert function
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            alertContainer.innerHTML = alertHtml;
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                const alert = alertContainer.querySelector('.alert');
+                if (alert) {
+                    alert.classList.remove('show');
+                    setTimeout(() => alert.remove(), 150);
+                }
+            }, 5000);
+        }
+
+        // Add cat form submission
+        document.getElementById('catForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const loading = submitBtn.querySelector('.loading');
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            loading.style.display = 'inline';
+            
+            try {
+                const formData = new FormData(this);
+                const imageFile = formData.get('imageFile');
+                
+                let imageUrl = null;
+                
+                // Upload image if provided
+                if (imageFile && imageFile.size > 0) {
+                    try {
+                        imageUrl = await uploadImage(imageFile);
+                        // Convert relative path to full URL for display
+                        imageUrl = `/api/photos/view?path=${imageUrl}`;
+                    } catch (uploadError) {
+                        console.error('Image upload error:', uploadError);
+                        showAlert(`Failed to upload image: ${uploadError.message}`, 'danger');
+                        return;
+                    }
+                }
+                
+                const catData = {
+                    name: formData.get('name'),
+                    type: formData.get('type'),
+                    image: imageUrl
+                };
+
+                const response = await fetch(`${API_BASE_URL}/cats`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(catData)
+                });
+
+                if (response.ok) {
+                    const createdCat = await response.json();
+                    showAlert(`Cat "${catData.name}" added successfully!`, 'success');
+                    this.reset();
+                    // Hide image preview after reset
+                    document.getElementById('imagePreview').style.display = 'none';
+                    
+                    // Show document upload modal for the newly created cat
+                    showDocumentUploadSection(createdCat);
+                    
+                    loadCats(); // Refresh the cats list
+                } else {
+                    const errorText = await response.text();
+                    showAlert(`Failed to add cat: ${errorText}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Error adding cat:', error);
+                showAlert(`Error adding cat: ${error.message}`, 'danger');
+            } finally {
+                // Hide loading state
+                submitBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        });
+
+        // Load cats function
+        async function loadCats() {
+            const catsContainer = document.getElementById('catsContainer');
+            
+            try {
+                catsContainer.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                        <p class="text-muted mt-2">Loading cats...</p>
+                    </div>
+                `;
+
+                const response = await fetch(`${API_BASE_URL}/cats`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('API Response:', data); // Debug log
+                    
+                    // Handle Spring Data REST HAL format
+                    let cats = [];
+                    if (data._embedded && data._embedded.cats) {
+                        cats = data._embedded.cats;
+                    } else if (Array.isArray(data)) {
+                        cats = data;
+                    }
+                    
+                    displayCats(cats);
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error('Error loading cats:', error);
+                catsContainer.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                        <p class="text-muted mt-2">Failed to load cats: ${error.message}</p>
+                        <button class="btn btn-primary btn-sm" onclick="loadCats()">
+                            <i class="fas fa-retry me-1"></i>Try Again
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Display cats function
+        function displayCats(cats) {
+            const catsContainer = document.getElementById('catsContainer');
+            
+            console.log('Displaying cats:', cats); // Debug log
+            
+            if (!cats || !Array.isArray(cats) || cats.length === 0) {
+                catsContainer.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-box-archive fa-3x mb-3" style="color: #DD6E1E;"></i>
+                        <p class="text-muted">No cats found. Add your first cat above!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const catsHtml = cats.map(cat => {
+                // Handle different ID formats that Spring Data REST might return
+                const catId = cat.id || cat._id || 'unknown';
+                const catName = cat.name || 'Unnamed Cat';
+                const catType = cat.type || 'Unknown Type';
+                const catImage = cat.image;
+                
+                return `
+                <div class="col-md-4 mb-3">
+                    <div class="card cat-card h-100">
+                        ${catImage ? `
+                    <!-- Simple approach - just show the image with a fallback to placeholder on error -->
+                    <img src="${catImage}" alt="${catName}" class="card-img-top" 
+                         style="height: 200px; object-fit: cover;" 
+                         onerror="this.onerror=null; this.src=''; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="card-img-top bg-light align-items-center justify-content-center" 
+                         style="height: 200px; display: none;">
+                        <i class="fas fa-box-archive fa-4x" style="color: #DD6E1E;"></i>
+                    </div>
+                ` : `
+                    <!-- Default placeholder when no image provided -->
+                    <div class="card-img-top d-flex align-items-center justify-content-center bg-light" 
+                        style="height: 200px;">
+                        <i class="fas fa-box-archive fa-4x" style="color: #DD6E1E;"></i>
+                    </div>
+                `}
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-box-archive me-2" style="color: #DD6E1E;"></i>${catName}
+                            </h5>
+                            <p class="card-text">
+                                <strong>Type:</strong> ${catType}<br>
+                                <strong>ID:</strong> ${catId}
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <button class="btn btn-outline-danger btn-sm me-2" onclick="deleteCat('${catId}', '${catName}')">
+                                <i class="fas fa-trash me-1"></i>Delete
+                            </button>
+                            <button class="btn btn-outline-primary btn-sm" onclick="showDocumentUpload('${catId}', '${catName}')">
+                                <i class="fas fa-file-medical me-1"></i>Medical History
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            }).join('');
+
+            catsContainer.innerHTML = `<div class="row">${catsHtml}</div>`;
+        }
+
+        // Delete cat function
+        async function deleteCat(catId, catName) {
+            if (!confirm(`Are you sure you want to delete "${catName}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/cats/${catId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showAlert(`Cat "${catName}" deleted successfully!`, 'success');
+                    loadCats(); // Refresh the cats list
+                } else {
+                    const errorText = await response.text();
+                    showAlert(`Failed to delete cat: ${errorText}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Error deleting cat:', error);
+                showAlert(`Error deleting cat: ${error.message}`, 'danger');
+            }
+        }
+
+        // Document upload functions
+        function showDocumentUploadSection(cat) {
+            document.getElementById('selectedCatId').value = cat.id || cat._links?.self?.href?.split('/').pop();
+            document.getElementById('selectedCatName').textContent = cat.name;
+            document.getElementById('documentResults').style.display = 'none';
+            document.getElementById('documentForm').reset();
+            
+            // Show the modal
+            const medicalModal = new bootstrap.Modal(document.getElementById('medicalRecordsModal'));
+            medicalModal.show();
+        }
+
+        function showDocumentUpload(catId, catName) {
+            showDocumentUploadSection({ id: catId, name: catName });
+        }
+
+        // Document form submission
+        document.getElementById('documentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.querySelector('.modal-footer button[type="submit"]');
+            const loading = submitBtn.querySelector('.loading');
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            loading.style.display = 'inline';
+            
+            try {
+                const formData = new FormData(this);
+                const documentFile = formData.get('file');
+                
+                if (!documentFile || documentFile.size === 0) {
+                    showDocumentAlert('Please select a DOCX file to upload.', 'danger');
+                    return;
+                }
+
+                // Upload and process the document
+                const response = await fetch(`${API_BASE_URL}/documents/process`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showDocumentAlert('Document processed successfully!', 'success');
+                    displayDocumentResults(result);
+                    
+                    // Make sure results are visible in the modal
+                    document.getElementById('documentResults').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    const errorText = await response.text();
+                    let errorMsg;
+                    try {
+                        const errorObj = JSON.parse(errorText);
+                        errorMsg = errorObj.error || errorText;
+                    } catch {
+                        errorMsg = errorText;
+                    }
+                    showDocumentAlert(`Failed to process document: ${errorMsg}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Error processing document:', error);
+                showDocumentAlert(`Error processing document: ${error.message}`, 'danger');
+            } finally {
+                // Hide loading state
+                submitBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        });
+
+        function displayDocumentResults(result) {
+            const resultsDiv = document.getElementById('documentResults');
+            const contentDiv = document.getElementById('documentContent');
+            
+            let content = '<h6>Document Processing Summary:</h6>';
+            
+            if (result.results) {
+                content += `<p><strong>File:</strong> ${result.results.filename}</p>`;
+                content += `<p><strong>Size:</strong> ${(result.results.size / 1024).toFixed(2)} KB</p>`;
+                
+                if (result.results.xml_files) {
+                    content += '<h6 class="mt-3">XML Content Analysis:</h6>';
+                    Object.keys(result.results.xml_files).forEach(xmlFile => {
+                        const xmlData = result.results.xml_files[xmlFile];
+                        content += `<div class="mb-2">`;
+                        content += `<strong>${xmlFile}:</strong><br>`;
+                        
+                        if (xmlData.text_content && xmlData.text_content.length > 0) {
+                            content += `<small>Text content (${xmlData.text_content.length} elements):</small><br>`;
+                            content += `<code class="text-muted">${xmlData.text_content.slice(0, 3).join(', ')}</code><br>`;
+                        }
+                        
+                        if (xmlData.xml_output) {
+                            content += `<details class="mt-1">`;
+                            content += `<summary>View XML Content</summary>`;
+                            content += `<pre class="bg-dark text-light p-2 mt-1" style="max-height: 200px; overflow-y: auto; font-size: 0.8em;">${xmlData.xml_output}</pre>`;
+                            content += `</details>`;
+                        }
+                        
+                        content += `</div>`;
+                    });
+                }
+            }
+            
+            contentDiv.innerHTML = content;
+            resultsDiv.style.display = 'block';
+        }
+
+        function showDocumentAlert(message, type) {
+            const alertContainer = document.getElementById('documentAlertContainer');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            // Auto-dismiss after 5 seconds for success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    const alert = alertContainer.querySelector('.alert');
+                    if (alert) {
+                        alert.remove();
+                    }
+                }, 5000);
+                
+                // If we're showing a success message, also automatically hide the modal after 3 seconds
+                // but only if we're not displaying results
+                if (document.getElementById('documentResults').style.display === 'none') {
+                    setTimeout(() => {
+                        const modalElement = document.getElementById('medicalRecordsModal');
+                        if (modalElement) {
+                            const modal = bootstrap.Modal.getInstance(modalElement);
+                            if (modal) modal.hide();
+                        }
+                    }, 3000);
+                }
+            }
+        }
+
+        // Reset form and alerts when the modal is closed
+        document.getElementById('medicalRecordsModal').addEventListener('hidden.bs.modal', function () {
+            document.getElementById('documentForm').reset();
+            document.getElementById('documentAlertContainer').innerHTML = '';
+            document.getElementById('documentResults').style.display = 'none';
+        });
+
+        // Load cats when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCats();
+        });
+        
+    </script>
+</body>
+</html>

