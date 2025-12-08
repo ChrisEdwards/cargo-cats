@@ -416,7 +416,54 @@ public class ApiController {
         }
     }
 
-    // --- Address Import Functionality (VULNERABLE: Untrusted Deserialization) ---
+    private ObjectInputFilter createAddressImportFilter() {
+        return filterInfo -> {
+            Class<?> clazz = filterInfo.serialClass();
+            if (clazz != null) {
+                String className = clazz.getName();
+                
+                // Block known dangerous classes and patterns
+                if (className.contains("Runtime") ||
+                    className.contains("ProcessBuilder") ||
+                    className.contains("Script") ||
+                    className.contains("Compiler") ||
+                    className.contains("FileInputStream") ||
+                    className.contains("FileOutputStream") ||
+                    className.contains("URLClassLoader") ||
+                    className.contains("InvokerTransformer") ||
+                    className.contains("InstantiateTransformer") ||
+                    className.contains("ChainedTransformer") ||
+                    className.contains("TemplatesImpl") ||
+                    className.contains("Proxy") ||
+                    className.contains("RMI") ||
+                    className.contains("JNDI") ||
+                    className.contains("Naming")) {
+                    logger.warn("Rejected deserialization of dangerous class: {}", className);
+                    return ObjectInputFilter.Status.REJECTED;
+                }
+                
+                // Allow safe Java standard library classes
+                if (className.startsWith("java.lang.") ||
+                    className.startsWith("java.util.") ||
+                    className.startsWith("java.math.")) {
+                    // But exclude dangerous ones already checked above
+                    return ObjectInputFilter.Status.ALLOWED;
+                }
+                
+                // Allow arrays
+                if (clazz.isArray()) {
+                    return ObjectInputFilter.Status.ALLOWED;
+                }
+                
+                // Reject everything else (including custom classes like MaliciousClass)
+                logger.warn("Rejected deserialization of non-whitelisted class: {}", className);
+                return ObjectInputFilter.Status.REJECTED;
+            }
+            return ObjectInputFilter.Status.UNDECIDED;
+        };
+    }
+
+    // --- Address Import Functionality ---
     @PostMapping("/addresses/import")
     public ResponseEntity<String> importAddresses(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
@@ -425,8 +472,8 @@ public class ApiController {
                     .body("{\"error\": \"No file provided\"}");
         }
         try {
-            // VULNERABLE: Untrusted deserialization of user-supplied file
             ObjectInputStream ois = new ObjectInputStream(file.getInputStream());
+            ois.setObjectInputFilter(createAddressImportFilter());
             Object obj = ois.readObject();
             ois.close();
             if (obj instanceof List) {
