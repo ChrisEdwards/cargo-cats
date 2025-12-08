@@ -17,59 +17,40 @@ permissions:
 jobs:
   smartfix:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      max-parallel: 1
-      matrix:
-        include:
-          # DISABLED: dataservice and labelservice have label permission bug
-          # - service: dataservice
-          #   app_id: 4d6c1564-e9a2-4c6e-b309-eb3e457d0668
-          #   build_command: cd services/dataservice && ./mvnw clean package -DskipTests -B
-          #   runtime: java
-          #   java_version: '17'
-          - service: frontgateservice
-            app_id: 947a1020-ae16-4b90-8269-2b2c937de509
-            build_command: cd services/frontgateservice && ./mvnw clean test -B
-            runtime: java
-            java_version: '11'
-          # - service: labelservice
-          #   app_id: 361ab43d-150c-4ebb-bcee-c863150473b3
-          #   build_command: cd services/labelservice && npm install
-          #   runtime: node
-          #   java_version: ''
-
-    name: SmartFix - ${{ matrix.service }}
+    name: SmartFix - frontgateservice
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up JDK
-        if: matrix.runtime == 'java'
         uses: actions/setup-java@v4
         with:
-          java-version: ${{ matrix.java_version }}
+          java-version: '11'
           distribution: 'temurin'
-
-      - name: Set up Node.js
-        if: matrix.runtime == 'node'
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
 
       - name: Run Contrast AI SmartFix
         uses: Contrast-Security-OSS/contrast-ai-smartfix-action@v1
         with:
           contrast_host: ${{ vars.CONTRAST_HOST }}
           contrast_org_id: ${{ vars.CONTRAST_ORG_ID }}
-          contrast_app_id: ${{ matrix.app_id }}
+          contrast_app_id: 947a1020-ae16-4b90-8269-2b2c937de509
           contrast_authorization_key: ${{ secrets.CONTRAST_AUTHORIZATION_KEY }}
           contrast_api_key: ${{ secrets.CONTRAST_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          build_command: ${{ matrix.build_command }}
+          build_command: cd services/frontgateservice && ./mvnw clean test -B
           # Use Contrast-hosted LLM (no external API keys needed)
           use_contrast_llm: 'true'
           # Optional: limit number of open PRs per service
           max_open_prs: 3
           # Enable verbose debug logging
           debug_mode: 'true'
+
+# DISABLED SERVICES (label permission bug investigation):
+# - dataservice:
+#     app_id: 4d6c1564-e9a2-4c6e-b309-eb3e457d0668
+#     build_command: cd services/dataservice && ./mvnw clean package -DskipTests -B
+#     java_version: '17'
+# - labelservice:
+#     app_id: 361ab43d-150c-4ebb-bcee-c863150473b3
+#     build_command: cd services/labelservice && npm install
+#     runtime: node
