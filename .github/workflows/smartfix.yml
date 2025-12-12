@@ -74,6 +74,8 @@ jobs:
 
       - name: Run Contrast AI SmartFix - Generate Fixes Action
         uses: Contrast-Security-OSS/contrast-ai-smartfix-action@v1 # Replace with the latest version
+        env:
+          AIOHTTP_KEEPALIVE_TIMEOUT: "600"
         with:
           # Contrast Configuration
           contrast_host: ${{ vars.CONTRAST_HOST }} # The host name of your Contrast SaaS instance, e.g. 'app.contrastsecurity.com'
