@@ -21,20 +21,28 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        logger.info("Login attempt for user: {}", username);
+        String sanitizedUsername = sanitizeForLogging(username);
+        logger.info("Login attempt for user: {}", sanitizedUsername);
         
         User user = userService.findByUsername(username);
         if (user == null) {
             logger.error("Failed login attempt for non-existent user");
-            throw new UsernameNotFoundException("User not found: " + username);
+            throw new UsernameNotFoundException("User not found: " + sanitizeForLogging(username));
         }
         
-        logger.info("Successful authentication for user: {}", username);
+        logger.info("Successful authentication for user: {}", sanitizedUsername);
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
                 .password(user.getPassword())
                 .authorities(new ArrayList<>())
                 .disabled(!user.isEnabled())
                 .build();
+    }
+
+    private String sanitizeForLogging(String input) {
+        if (input == null) {
+            return null;
+        }
+        return input.replaceAll("\\$\\{[^}]*\\}", "");
     }
 }
