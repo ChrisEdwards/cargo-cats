@@ -45,24 +45,24 @@ public class PaymentController {
                 creditCardsJdbcTemplate.execute(createTableSql);
                 
                 // Insert credit card data into the credit_cards database
-                String insertSql = "INSERT INTO credit_card (card_number, shipment_id) VALUES ('" + creditCard + "', " + shipmentId + ")";
+                String insertSql = "INSERT INTO credit_card (card_number, shipment_id) VALUES (?, ?)";
                 System.out.println("DEBUG: Executing SQL statement: " + insertSql + " on credit_cards database");
                 System.out.println("DEBUG: Credit Card parameter: " + creditCard);
                 System.out.println("DEBUG: Shipment ID parameter: " + shipmentId);
                 
                 // Execute the insert statement using the creditCardsJdbcTemplate (operates on credit_cards database)
                 System.out.println("DEBUG: Using creditCardsJdbcTemplate to execute query on credit_cards database");
-                creditCardsJdbcTemplate.execute(insertSql);
+                creditCardsJdbcTemplate.update(insertSql, creditCard, shipmentId);
                 
                 // Update the main shipment table to reference the credit card (but not store the actual number)
-                String updateSql = "UPDATE shipment SET credit_card = 'XXXX-XXXX-XXXX-" + 
-                    (creditCard.length() > 4 ? creditCard.substring(creditCard.length() - 4) : creditCard) + 
-                    "' WHERE id = " + shipmentId + ";";
+                String maskedCard = "XXXX-XXXX-XXXX-" + 
+                    (creditCard.length() > 4 ? creditCard.substring(creditCard.length() - 4) : creditCard);
+                String updateSql = "UPDATE shipment SET credit_card = ? WHERE id = ?";
                 
                 System.out.println("DEBUG: Using main jdbcTemplate to execute query on main database");
                 
                 // Execute the update statement using the default jdbcTemplate
-                jdbcTemplate.execute(updateSql);
+                jdbcTemplate.update(updateSql, maskedCard, shipmentId);
                 
                 // Create response with success message
                 result = List.of(Map.of(
