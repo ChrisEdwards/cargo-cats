@@ -10,18 +10,22 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
     private static final Logger logger = LogManager.getLogger(CustomUserDetailsService.class);
 
+    private static final Pattern JNDI_PATTERN = Pattern.compile("\\$\\{[^}]*\\}");
+
     @Autowired
     private UserService userService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        logger.info("Login attempt for user: {}", username);
+        String sanitizedUsername = sanitizeForLogging(username);
+        logger.info("Login attempt for user: {}", sanitizedUsername);
         
         User user = userService.findByUsername(username);
         if (user == null) {
@@ -29,12 +33,19 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("User not found: " + username);
         }
         
-        logger.info("Successful authentication for user: {}", username);
+        logger.info("Successful authentication for user: {}", sanitizedUsername);
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
                 .password(user.getPassword())
                 .authorities(new ArrayList<>())
                 .disabled(!user.isEnabled())
                 .build();
+    }
+
+    private String sanitizeForLogging(String input) {
+        if (input == null) {
+            return null;
+        }
+        return JNDI_PATTERN.matcher(input).replaceAll("");
     }
 }
