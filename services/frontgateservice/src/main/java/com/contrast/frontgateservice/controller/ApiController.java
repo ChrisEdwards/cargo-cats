@@ -416,58 +416,7 @@ public class ApiController {
         }
     }
 
-    private Object deserializeAddresses(InputStream inputStream) throws IOException, ClassNotFoundException {
-        ObjectInputStream ois = new ObjectInputStream(inputStream);
-        ois.setObjectInputFilter(filterInfo -> {
-            Class<?> clazz = filterInfo.serialClass();
-            if (clazz != null) {
-                String className = clazz.getName();
-                // Allow basic collection and data types
-                if (className.equals("java.util.ArrayList") ||
-                    className.equals("java.util.HashMap") ||
-                    className.equals("java.util.LinkedHashMap") ||
-                    className.equals("java.lang.String") ||
-                    className.equals("java.lang.Long") ||
-                    className.equals("java.lang.Integer") ||
-                    className.equals("java.lang.Double") ||
-                    className.equals("java.lang.Boolean") ||
-                    className.equals("java.lang.Number")) {
-                    return ObjectInputFilter.Status.ALLOWED;
-                }
-                // Allow arrays of allowed types (needed for ArrayList/HashMap internals)
-                if (clazz.isArray()) {
-                    Class<?> componentType = clazz.getComponentType();
-                    if (componentType != null) {
-                        String componentName = componentType.getName();
-                        if (componentName.equals("java.lang.Object") ||
-                            componentName.equals("java.lang.String") ||
-                            componentName.equals("java.lang.Long") ||
-                            componentName.equals("java.lang.Integer") ||
-                            componentName.equals("java.lang.Double") ||
-                            componentName.equals("java.lang.Boolean") ||
-                            componentName.equals("java.util.HashMap$Node") ||
-                            componentName.startsWith("java.util.Map$Entry")) {
-                            return ObjectInputFilter.Status.ALLOWED;
-                        }
-                    }
-                }
-                logger.warn("Rejected deserialization of class: {}", className);
-                return ObjectInputFilter.Status.REJECTED;
-            }
-            return ObjectInputFilter.Status.UNDECIDED;
-        });
-        try {
-            Object obj = ois.readObject();
-            return obj;
-        } catch (Exception e) {
-            logger.error("Deserialization failed: {}", e.getMessage());
-            return null;
-        } finally {
-            ois.close();
-        }
-    }
-
-    // --- Address Import Functionality ---
+    // --- Address Import Functionality (VULNERABLE: Untrusted Deserialization) ---
     @PostMapping("/addresses/import")
     public ResponseEntity<String> importAddresses(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
@@ -476,12 +425,10 @@ public class ApiController {
                     .body("{\"error\": \"No file provided\"}");
         }
         try {
-            Object obj = deserializeAddresses(file.getInputStream());
-            if (obj == null) {
-                return ResponseEntity.badRequest()
-                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-                        .body("{\"error\": \"Invalid or unsafe file content\"}");
-            }
+            // VULNERABLE: Untrusted deserialization of user-supplied file
+            ObjectInputStream ois = new ObjectInputStream(file.getInputStream());
+            Object obj = ois.readObject();
+            ois.close();
             if (obj instanceof List) {
                 List<?> addresses = (List<?>) obj;
                 // Get the current authenticated user
