@@ -89,3 +89,7 @@ logs/
 tmp/
 temp/
 *.tmp
+
+# Added by Contrast Stagehand
+*.iml
+*.local
